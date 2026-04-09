@@ -22,3 +22,6 @@ stage256/keys/*
 
 _site/
 site/
+
+# private keys
+keys/*private*.pem
