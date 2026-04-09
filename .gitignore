@@ -19,3 +19,6 @@ stage256/keys/*
 *.key
 *.p12
 *.pfx
+
+_site/
+site/
