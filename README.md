@@ -2,71 +2,103 @@
 
 MIT License Copyright (c) 2025 Motohiro Suzuki
 
+---
+
 ## Overview
 
-Stage265 publishes a browser-accessible verification URL through GitHub Pages.
+Stage265 introduces a **public verification URL** using GitHub Pages.
 
-This stage extends Stage264 by adding:
+This stage extends Stage264 by enabling:
 
-- public verification page
-- URL-based access
-- browser-side manifest and bundle integrity checks
-- GitHub Actions linkage visibility
-- public evidence hosting
+* browser-based verification
+* URL-only access (no local setup required for basic checks)
+* public inspection of evidence artifacts
+* alignment with external verification expectations (OpenSSF / supply chain transparency)
+
+---
 
 ## Core Idea
 
-Stage264 made the evidence reproducible.
+Stage264 proved:
 
-Stage265 makes the evidence publicly checkable through a stable verification URL.
+* deterministic artifact generation
+* OpenTimestamps anchoring (Bitcoin-backed)
+* verifiable release manifest
 
-This means a third party can:
+Stage265 proves:
 
-- open a GitHub Pages URL
-- inspect the evidence bundle
-- verify manifest integrity
-- verify bundle integrity
-- verify GitHub Actions linkage
+👉 **Anyone can verify the evidence via a URL**
 
-without requiring a local repository checkout for the basic verification path.
+---
 
-## Key Files
+## Public Verification
 
-- `site/index.html`
-- `site/verify.html`
-- `release_manifest.json`
-- `release_manifest.json.sha256`
-- `release_manifest.json.ots`
-- `github_actions_receipt.json`
-- `stage265-source-bundle.tar.gz`
+### Main URL
 
-## Workflow
-
-GitHub Actions builds the evidence bundle, prepares the Pages site, and deploys it.
-
-## Public Verification URL
-
-After Pages deployment, the expected URL format is:
-
-```text
 https://mokkunsuzuki-code.github.io/stage265/
 
-Main verification page:
+### Verification Page
 
 https://mokkunsuzuki-code.github.io/stage265/verify.html
-Important Accuracy
 
-Browser verification in Stage265 confirms:
+---
 
-manifest presence
-manifest SHA-256 integrity
-bundle SHA-256 integrity
-receipt presence
-Actions run linkage
-OTS proof presence
+## What Can Be Verified
 
-It does not by itself finalize Bitcoin confirmation of the OpenTimestamps proof.
+The verification page performs:
 
-License
+* Manifest SHA-256 integrity check
+* Source bundle SHA-256 verification
+* GitHub Actions execution linkage verification
+* Evidence file presence validation
+* OpenTimestamps proof presence confirmation
 
-This project is licensed under the MIT License.
+---
+
+## Evidence Structure
+
+```
+release_manifest.json
+release_manifest.json.sha256
+release_manifest.json.ots
+github_actions_receipt.json
+stage265-source-bundle.tar.gz
+```
+
+---
+
+## What This Stage Proves
+
+* Evidence is publicly accessible
+* Verification is reproducible without local environment
+* Evidence is cryptographically consistent
+* CI execution is externally inspectable
+* Timestamp proof is anchored to Bitcoin (via OpenTimestamps)
+
+---
+
+## Important Notes
+
+* Browser verification confirms integrity and linkage
+* Final OpenTimestamps verification still requires:
+
+```
+ots upgrade release_manifest.json.ots
+ots verify release_manifest.json.ots
+```
+
+* This stage does NOT claim full trustlessness, but enables independent verification
+
+---
+
+## Positioning
+
+Stage265 represents:
+
+👉 **"From verifiable evidence → publicly accessible verification"**
+
+---
+
+## License
+
+MIT License
