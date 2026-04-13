@@ -1,297 +1,172 @@
-# Stage268: Verification Score
+# QSP / Stage269 – VEP Gate (Trust Decision Layer)
 
 ## Overview
 
-Stage268 introduces a **deterministic verification score model** that evaluates trust from four independent dimensions and publishes the result as a reproducible public score.
+Stage269 introduces the **Verification Execution Policy (VEP) Gate**.
 
-This stage extends the previous verification work by turning evidence into a visible trust evaluation.
+This stage transforms the system from:
 
-The score is published as both:
+- "measuring trust" (Stage268)
 
-- machine-readable JSON
-- human-readable public page
+into:
+
+- **"deciding whether something is allowed to be released"**
 
 ---
 
 ## Core Concept
 
-Stage268 evaluates trust using four components:
+The system evaluates trust across four dimensions:
 
-- **Time Trust**
-- **Integrity Trust**
-- **Execution Trust**
-- **Identity Trust**
+- Time Trust (Bitcoin confirmations)
+- Integrity Trust (SHA256 / OTS)
+- Execution Trust (CI / GitHub Actions)
+- Identity Trust (Signatures / Multi-signer)
 
-These are combined as:
+And applies a decision model:
 
-**Total Trust = Time × Integrity × Execution × Identity**
 
-This is not a claim of absolute security.
+Total Trust = Time × Integrity × Execution × Identity
 
-It is a **reproducible evidence-based trust index**.
 
 ---
 
-## What This Stage Adds
+## VEP Gate Model
 
-Stage268 adds:
+Stage269 introduces a **two-layer gate**:
 
-- a deterministic trust scoring model
-- reproducible score generation
-- local score verification
-- GitHub Actions score verification
-- public GitHub Pages publication for the score
-- a visual verification score page
+### Immediate Gate
 
-This transforms the system from:
 
-- evidence exists
+Integrity × Execution × Identity
 
-into:
 
-- evidence is scored and publicly visible
+- If any of these fail → `reject`
+- System stops (fail-closed)
 
----
+### Settlement Gate
 
-## Verification Dimensions
 
-### 1. Time Trust
+Time (Bitcoin)
 
-Measures the time-anchoring status of evidence.
 
-Examples:
-
-- Bitcoin-related evidence detected
-- OpenTimestamps-related evidence detected
-- confirmations parsed or not yet parsed
-
-Current interpretation example:
-
-- `0.25` = Bitcoin-related evidence found but confirmations not parsed
-- `1.00` = strong finalized Bitcoin confirmation state
-
-### 2. Integrity Trust
-
-Measures whether artifacts are content-bound and tamper-detectable.
-
-Examples:
-
-- SHA256 files exist
-- OpenTimestamps proof files exist
-
-### 3. Execution Trust
-
-Measures whether execution evidence exists.
-
-Examples:
-
-- GitHub Actions workflows exist
-- CI-linked evidence exists
-- run URL evidence exists
-
-### 4. Identity Trust
-
-Measures whether results are bound to identified signers.
-
-Examples:
-
-- signature files exist
-- public key files exist
-- multi-signer configuration exists
+- Not yet confirmed → `pending`
+- Fully confirmed → `accept`
 
 ---
 
-## Formula
+## Decision States
 
-The score is computed as:
+The gate outputs three states:
 
-`Total Trust = Time × Integrity × Execution × Identity`
+### 1. ACCEPT
+- All conditions satisfied
+- Safe to release
 
-This multiplicative model is important.
+### 2. PENDING
+- Technically valid
+- Waiting for time-based confirmation (Bitcoin)
 
-If one trust dimension is weak, the total score drops accordingly.
-
-This makes weak trust dimensions visible instead of hidden.
-
----
-
-## Output
-
-Stage268 generates:
-
-- `out/verification_score/verification_score.json`
-- `out/verification_score/verification_score.json.sha256`
-- `out/verification_score/verification_score.md`
-
-Public page:
-
-- `site/index.html`
-
-Published files:
-
-- `site/verification_score.json`
-- `site/verification_score.md`
+### 3. REJECT
+- Trust conditions not satisfied
+- Release is blocked (fail-closed)
 
 ---
 
-## Public Verification Page
+## Example (Current State)
 
-Stage268 publishes a public score page through GitHub Pages.
 
-This page displays:
+Decision: PENDING
+Immediate Score: 1.0
+Total Trust: 0.25
 
-- Total Trust
-- Time Trust
-- Integrity Trust
-- Execution Trust
-- Identity Trust
-- raw JSON score output
+Reason:
+Time settlement pending (Bitcoin confirmations not yet complete)
 
-This makes trust evaluation publicly visible and reproducible.
 
----
+This means:
 
-## What This Stage Proves
-
-Stage268 proves that:
-
-- trust can be modeled deterministically
-- evidence can be converted into a reproducible score
-- the result can be verified locally
-- the result can be verified in CI
-- the result can be published publicly as a verification page
+- Integrity ✅
+- Execution ✅
+- Identity ✅
+- Time ⏳ (waiting)
 
 ---
 
-## Important Accuracy
+## Key Insight
 
-Stage268 does **not** prove absolute security.
+QSP and VEP together create a unique model:
 
-It does **not** claim that a score alone is sufficient for full security review.
+- QSP → **fail-closed execution**
+- VEP → **fail-closed release decision**
 
-It proves something narrower and more important:
+### In one sentence:
 
-- trust evidence can be measured
-- weak points can be surfaced
-- trust can be published reproducibly
-
----
-
-## Why This Stage Matters
-
-Earlier stages created evidence.
-
-Stage268 makes that evidence measurable.
-
-This is the shift from:
-
-- “evidence exists”
-
-to:
-
-- “trust is evaluated and publicly visible”
-
-That is a major step toward real external review and policy gating.
+> "QSP stops broken systems. VEP stops untrusted outputs."
 
 ---
 
-## Current Meaning of the Score
+## What This Stage Achieves
 
-A score such as:
-
-- Time Trust = `0.25`
-- Integrity Trust = `1.00`
-- Execution Trust = `1.00`
-- Identity Trust = `1.00`
-- Total Trust = `0.25`
-
-means:
-
-- most trust dimensions are strong
-- one weak trust dimension is pulling the total score down
-
-This is not a failure of the model.
-
-This is exactly what the model is supposed to reveal.
+- Deterministic trust evaluation
+- Reproducible decision logic
+- Transparent failure reasons
+- Public verifiability via GitHub Pages
 
 ---
 
-## Public URL
+## Public Verification
 
-Verification Score page:
+Verification page:
 
-`https://mokkunsuzuki-code.github.io/stage268/`
+https://mokkunsuzuki-code.github.io/stage269/
+
+Direct data:
+
+- gate_result.json
+- verification_score.json
+- OTS proof
 
 ---
 
-## Local Usage
+## Why This Matters
 
-Build the verification score:
+Traditional systems:
 
-```bash
-python3 tools/build_verification_score.py
 
-Verify the generated score:
+Build → Release → Discover problems later
 
-python3 tools/verify_verification_score.py
-GitHub Actions
 
-Stage268 includes:
+QSP + VEP:
 
-verification score build
-verification score verification
-GitHub Pages deployment
 
-This means the score is:
+Build → Verify → Reject if unsafe → Never released
 
-generated locally
-reproducible in CI
-published publicly
-Strategic Position
 
-Stage267 made verification trust visible.
+---
 
-Stage268 makes multi-dimensional trust measurable.
+## Important Clarification
 
-This stage is the transition from:
+`reject` does NOT mean:
 
-verification visibility
+- "attacked"
+- "compromised"
 
-to:
+It means:
 
-trust scoring
-Next Direction
+> "Trust conditions are not satisfied."
 
-A natural next stage is to introduce policy behavior such as:
+---
 
-accept
-pending
-reject
+## Next Stage
 
-based on trust evaluation rules.
+Stage270 will introduce:
 
-That would turn score visibility into enforcement.
+- Bitcoin confirmation parsing
+- Automatic transition from `pending` → `accept`
 
-License
+---
 
-MIT License
+## License
 
-Copyright (c) 2025 Motohiro Suzuki
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT License (2025)
