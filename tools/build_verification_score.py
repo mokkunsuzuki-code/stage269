@@ -62,28 +62,50 @@ def detect_time_trust(root: Path) -> dict[str, Any]:
     confirmations_found = []
     bitcoin_related_files = []
 
+    bitcoin_keywords = [
+        "bitcoin",
+        "confirm",
+        "blockheight",
+        "block_height",
+        "block hash",
+        "blockhash",
+        "txid",
+        "merkle",
+        "opentimestamps",
+        "calendar",
+        "timestamp",
+    ]
+
     for p in json_candidates:
         data = safe_read_json(p)
         if data is None:
             continue
 
-        text = json.dumps(data, ensure_ascii=False).lower()
-        if "bitcoin" in text or "confirmation" in text or "block height" in text:
+        blob = json.dumps(data, ensure_ascii=False).lower()
+        if any(k in blob for k in bitcoin_keywords):
             bitcoin_related_files.append(str(p.relative_to(root)))
 
         def walk(obj: Any):
             if isinstance(obj, dict):
                 for k, v in obj.items():
-                    key = str(k).lower()
+                    key = str(k).lower().replace(" ", "_").replace("-", "_")
+
                     if key in {
                         "bitcoin_confirmations",
                         "confirmations",
                         "btc_confirmations",
                         "confirmation_count",
+                        "confirm_count",
                     }:
                         if isinstance(v, (int, float)):
                             confirmations_found.append(float(v))
+
+                    if key in {"chain", "network"} and isinstance(v, str):
+                        if v.lower() in {"bitcoin", "btc", "mainnet"}:
+                            bitcoin_related_files.append(str(p.relative_to(root)))
+
                     walk(v)
+
             elif isinstance(obj, list):
                 for item in obj:
                     walk(item)
@@ -92,7 +114,6 @@ def detect_time_trust(root: Path) -> dict[str, Any]:
 
     max_confirmations = max(confirmations_found) if confirmations_found else 0.0
 
-    # 6 confirmations を満点基準
     if max_confirmations > 0:
         score = clamp(max_confirmations / 6.0)
         status = "measured"
